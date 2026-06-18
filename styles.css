@@ -1,0 +1,72 @@
+/* 
+   Style 1: Straight Border (Default)
+*/
+body.obsidian-highlight-style-straight .tree-item-self.plugin-active-folder {
+    background-color: rgba(var(--obsidian-highlight-folder-rgb), var(--obsidian-highlight-folder-tone)) !important;
+    border-left: 3px solid var(--obsidian-highlight-folder-hex) !important;
+    border-radius: 0 !important;
+}
+
+body.obsidian-highlight-style-straight .tree-item-self.plugin-linked-file {
+    background-color: rgba(var(--obsidian-highlight-link-rgb), var(--obsidian-highlight-link-tone)) !important;
+    border-left: 3px solid rgba(var(--obsidian-highlight-link-rgb), 0.5) !important;
+    border-radius: 0 !important;
+}
+
+/* 
+   Style 2: Blob Shape
+*/
+body.obsidian-highlight-style-blob .tree-item-self.plugin-active-folder {
+    background-color: rgba(var(--obsidian-highlight-folder-rgb), var(--obsidian-highlight-folder-tone)) !important;
+    border: 2px solid var(--obsidian-highlight-folder-hex) !important;
+    border-radius: 50% 20% 60% 30% / 30% 60% 40% 50% !important;
+    margin-bottom: 2px;
+}
+
+body.obsidian-highlight-style-blob .tree-item-self.plugin-linked-file {
+    background-color: rgba(var(--obsidian-highlight-link-rgb), var(--obsidian-highlight-link-tone)) !important;
+    border: 2px dashed var(--obsidian-highlight-link-hex) !important;
+    border-radius: 30% 60% 40% 50% / 50% 30% 60% 40% !important;
+    margin-bottom: 2px;
+}
+
+/* 
+   Style 3: Strikethrough
+*/
+body.obsidian-highlight-style-strikethrough .tree-item-self.plugin-active-folder .tree-item-inner {
+    text-decoration: line-through;
+    text-decoration-color: var(--obsidian-highlight-folder-hex);
+    text-decoration-thickness: 2px;
+}
+body.obsidian-highlight-style-strikethrough .tree-item-self.plugin-active-folder {
+    background-color: transparent !important;
+}
+
+body.obsidian-highlight-style-strikethrough .tree-item-self.plugin-linked-file .tree-item-inner {
+    text-decoration: line-through;
+    text-decoration-color: var(--obsidian-highlight-link-hex);
+    text-decoration-style: dashed;
+    text-decoration-thickness: 2px;
+}
+body.obsidian-highlight-style-strikethrough .tree-item-self.plugin-linked-file {
+    background-color: transparent !important;
+}
+
+/* 
+   Indent Lines (Coloring the lines leading from the folder/file down)
+*/
+body.obsidian-highlight-indent-lines .plugin-active-folder-container > .tree-item-children {
+    border-left-color: rgba(var(--obsidian-highlight-folder-rgb), 0.8) !important;
+}
+body.obsidian-highlight-indent-lines .plugin-active-folder-container > .tree-item-children > .nav-indentation-guide {
+    border-color: rgba(var(--obsidian-highlight-folder-rgb), 0.8) !important;
+    background-color: rgba(var(--obsidian-highlight-folder-rgb), 0.8) !important;
+}
+
+body.obsidian-highlight-indent-lines .plugin-linked-file-container > .tree-item-children {
+    border-left-color: rgba(var(--obsidian-highlight-link-rgb), 0.6) !important;
+}
+body.obsidian-highlight-indent-lines .plugin-linked-file-container > .tree-item-children > .nav-indentation-guide {
+    border-color: rgba(var(--obsidian-highlight-link-rgb), 0.6) !important;
+    background-color: rgba(var(--obsidian-highlight-link-rgb), 0.6) !important;
+}
