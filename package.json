@@ -1,5 +1,5 @@
 {
-  "name": "obsidian-highlight-plugin",
+  "name": "redcrumbs",
   "version": "1.0.0",
   "description": "Highlights the active file's parent folder and linked files in the File Explorer.",
   "main": "main.js",
