@@ -1,6 +1,6 @@
 {
   "name": "redcrumbs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Highlights the active file's parent folder and linked files in the File Explorer.",
   "main": "main.js",
   "scripts": {
@@ -8,11 +8,10 @@
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
   },
   "keywords": [],
-  "author": "",
+  "author": "neonoodles-ctrl",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^16.11.29",
-    "builtin-modules": "3.3.0",
     "esbuild": "0.17.3",
     "obsidian": "latest",
     "tslib": "2.4.0",

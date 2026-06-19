@@ -22,8 +22,6 @@ RedCrumbs is an Obsidian plugin that highlights the active file's parent folder 
 4. Reload Obsidian.
 5. Go to **Settings** > **Community Plugins** and enable **RedCrumbs**.
 
-*(Note: Official Community Plugin installation coming soon!)*
-
 ## Usage
 
 Once enabled, simply click on any note in your vault. If the note is inside a folder, that folder will highlight. If the note has links to other notes (or is linked by other notes), those notes will also highlight in the File Explorer sidebar.

@@ -1,10 +1,10 @@
-import { Plugin, TFile, WorkspaceLeaf, PluginSettingTab, App, Setting } from 'obsidian';
+import { Plugin, TFile, PluginSettingTab, App, Setting } from 'obsidian';
 
 interface HighlightPluginSettings {
     folderColor: string;
-    folderTone: number; // 0.0 to 1.0
+    folderTone: number;
     linkColor: string;
-    linkTone: number; // 0.0 to 1.0
+    linkTone: number;
     folderStyle: 'straight' | 'blob' | 'strikethrough';
     colorIndentLines: boolean;
 }
@@ -15,10 +15,10 @@ const DEFAULT_SETTINGS: HighlightPluginSettings = {
     linkColor: '#6e59d9',
     linkTone: 0.08,
     folderStyle: 'straight',
-    colorIndentLines: true
-}
+    colorIndentLines: true,
+};
 
-function hexToRgb(hex: string) {
+function hexToRgb(hex: string): string {
     hex = hex.replace('#', '');
     if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
     const bigint = parseInt(hex, 16);
@@ -32,20 +32,16 @@ export default class HighlightPlugin extends Plugin {
     settings: HighlightPluginSettings;
 
     async onload() {
-        console.log('loading HighlightPlugin');
-
         await this.loadSettings();
         this.addSettingTab(new HighlightSettingTab(this.app, this));
         this.updateDOMStyles();
 
-        // Register an event listener for file-open
         this.registerEvent(
             this.app.workspace.on('file-open', (file) => {
                 this.updateHighlights(file);
             })
         );
-        
-        // Listen to metadata cache changes (e.g. links updated)
+
         this.registerEvent(
             this.app.metadataCache.on('resolved', () => {
                 const file = this.app.workspace.getActiveFile();
@@ -54,8 +50,7 @@ export default class HighlightPlugin extends Plugin {
                 }
             })
         );
-        
-        // Wait until layout is ready before highlighting
+
         this.app.workspace.onLayoutReady(() => {
             const file = this.app.workspace.getActiveFile();
             if (file) {
@@ -65,12 +60,14 @@ export default class HighlightPlugin extends Plugin {
     }
 
     onunload() {
-        console.log('unloading HighlightPlugin');
         this.clearHighlights();
-        
-        // Clean up body classes
-        const body = document.body;
-        body.classList.remove('obsidian-highlight-style-straight', 'obsidian-highlight-style-blob', 'obsidian-highlight-style-strikethrough', 'obsidian-highlight-indent-lines');
+        const body = activeDocument.body;
+        body.classList.remove(
+            'obsidian-highlight-style-straight',
+            'obsidian-highlight-style-blob',
+            'obsidian-highlight-style-strikethrough',
+            'obsidian-highlight-indent-lines'
+        );
     }
 
     async loadSettings() {
@@ -82,7 +79,7 @@ export default class HighlightPlugin extends Plugin {
     }
 
     updateDOMStyles() {
-        const body = document.body;
+        const body = activeDocument.body;
         body.style.setProperty('--obsidian-highlight-folder-rgb', hexToRgb(this.settings.folderColor));
         body.style.setProperty('--obsidian-highlight-folder-hex', this.settings.folderColor);
         body.style.setProperty('--obsidian-highlight-folder-tone', this.settings.folderTone.toString());
@@ -91,7 +88,12 @@ export default class HighlightPlugin extends Plugin {
         body.style.setProperty('--obsidian-highlight-link-hex', this.settings.linkColor);
         body.style.setProperty('--obsidian-highlight-link-tone', this.settings.linkTone.toString());
 
-        body.classList.remove('obsidian-highlight-style-straight', 'obsidian-highlight-style-blob', 'obsidian-highlight-style-strikethrough', 'obsidian-highlight-indent-lines');
+        body.classList.remove(
+            'obsidian-highlight-style-straight',
+            'obsidian-highlight-style-blob',
+            'obsidian-highlight-style-strikethrough',
+            'obsidian-highlight-indent-lines'
+        );
         body.classList.add(`obsidian-highlight-style-${this.settings.folderStyle}`);
         if (this.settings.colorIndentLines) {
             body.classList.add('obsidian-highlight-indent-lines');
@@ -102,78 +104,66 @@ export default class HighlightPlugin extends Plugin {
         this.clearHighlights();
         if (!activeFile) return;
 
-        const fileExplorers = this.app.workspace.getLeavesOfType("file-explorer");
-        if (fileExplorers.length === 0) return;
+        const linkedPaths = this.collectLinkedPaths(activeFile);
+        const parentPath = activeFile.parent?.path ?? null;
 
-        // Find linked files (outlinks and backlinks)
-        const linkedPaths = new Set<string>();
-        
-        // Outlinks (forward links)
-        const cache = this.app.metadataCache.getFileCache(activeFile);
-        if (cache && cache.links) {
-            cache.links.forEach(link => {
-                const destFile = this.app.metadataCache.getFirstLinkpathDest(link.link, activeFile.path);
-                if (destFile) {
-                    linkedPaths.add(destFile.path);
-                }
-            });
-        }
-        
-        // Backlinks (incoming links)
-        // @ts-ignore
-        const resolvedLinks = this.app.metadataCache.resolvedLinks;
-        for (const sourcePath in resolvedLinks) {
-            const destLinks = resolvedLinks[sourcePath];
-            if (destLinks && destLinks[activeFile.path] !== undefined) {
-                linkedPaths.add(sourcePath);
+        this.forEachFileExplorerItem((path, el) => {
+            const containerEl = el.parentElement;
+
+            if (parentPath && path === parentPath && path !== '/') {
+                el.classList.add('plugin-active-folder');
+                containerEl?.classList.add('plugin-active-folder-container');
+            } else if (linkedPaths.has(path)) {
+                el.classList.add('plugin-linked-file');
+                containerEl?.classList.add('plugin-linked-file-container');
             }
-        }
-
-        const parentFolder = activeFile.parent;
-        const parentPath = parentFolder ? parentFolder.path : null;
-
-        // Update DOM for each file explorer instance
-        fileExplorers.forEach((leaf: WorkspaceLeaf) => {
-            // @ts-ignore
-            const fileItems = leaf.view.fileItems;
-            if (!fileItems) return;
-
-            Object.entries(fileItems).forEach(([path, fileItem]) => {
-                // @ts-ignore
-                const el = fileItem.selfEl as HTMLElement;
-                if (!el) return;
-
-                const containerEl = el.parentElement; // The .tree-item wrapper
-
-                if (parentPath && path === parentPath && path !== '/') {
-                    el.classList.add('plugin-active-folder');
-                    if (containerEl) containerEl.classList.add('plugin-active-folder-container');
-                } else if (linkedPaths.has(path)) {
-                    el.classList.add('plugin-linked-file');
-                    if (containerEl) containerEl.classList.add('plugin-linked-file-container');
-                }
-            });
         });
     }
 
     clearHighlights() {
-        const fileExplorers = this.app.workspace.getLeavesOfType("file-explorer");
-        fileExplorers.forEach((leaf: WorkspaceLeaf) => {
-            // @ts-ignore
-            const fileItems = leaf.view.fileItems;
-            if (!fileItems) return;
-            
-            Object.values(fileItems).forEach((fileItem: any) => {
-                const el = fileItem.selfEl as HTMLElement;
-                if (el) {
-                    el.classList.remove('plugin-active-folder', 'plugin-linked-file');
-                    const containerEl = el.parentElement;
-                    if (containerEl) {
-                        containerEl.classList.remove('plugin-active-folder-container', 'plugin-linked-file-container');
-                    }
+        this.forEachFileExplorerItem((_path, el) => {
+            el.classList.remove('plugin-active-folder', 'plugin-linked-file');
+            el.parentElement?.classList.remove(
+                'plugin-active-folder-container',
+                'plugin-linked-file-container'
+            );
+        });
+    }
+
+    private collectLinkedPaths(activeFile: TFile): Set<string> {
+        const linkedPaths = new Set<string>();
+        const cache = this.app.metadataCache.getFileCache(activeFile);
+
+        if (cache?.links) {
+            for (const link of cache.links) {
+                const destFile = this.app.metadataCache.getFirstLinkpathDest(link.link, activeFile.path);
+                if (destFile) {
+                    linkedPaths.add(destFile.path);
+                }
+            }
+        }
+
+        const { resolvedLinks } = this.app.metadataCache;
+        for (const sourcePath in resolvedLinks) {
+            if (resolvedLinks[sourcePath]?.[activeFile.path] !== undefined) {
+                linkedPaths.add(sourcePath);
+            }
+        }
+
+        return linkedPaths;
+    }
+
+    private forEachFileExplorerItem(callback: (path: string, el: HTMLElement) => void) {
+        const fileExplorers = this.app.workspace.getLeavesOfType('file-explorer');
+        for (const leaf of fileExplorers) {
+            const items = leaf.view.containerEl.querySelectorAll<HTMLElement>('.tree-item-self[data-path]');
+            items.forEach((el) => {
+                const path = el.getAttribute('data-path');
+                if (path) {
+                    callback(path, el);
                 }
             });
-        });
+        }
     }
 }
 
@@ -186,10 +176,12 @@ class HighlightSettingTab extends PluginSettingTab {
     }
 
     display(): void {
-        const {containerEl} = this;
+        const { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl('h2', {text: 'File Explorer Highlight Settings'});
+        new Setting(containerEl)
+            .setName('File Explorer Highlight Settings')
+            .setHeading();
 
         new Setting(containerEl)
             .setName('Folder Highlight Color')
@@ -208,7 +200,6 @@ class HighlightSettingTab extends PluginSettingTab {
             .addSlider(slider => slider
                 .setLimits(0.0, 1.0, 0.05)
                 .setValue(this.plugin.settings.folderTone)
-                .setDynamicTooltip()
                 .onChange(async (value) => {
                     this.plugin.settings.folderTone = value;
                     await this.plugin.saveSettings();
@@ -232,7 +223,6 @@ class HighlightSettingTab extends PluginSettingTab {
             .addSlider(slider => slider
                 .setLimits(0.0, 1.0, 0.05)
                 .setValue(this.plugin.settings.linkTone)
-                .setDynamicTooltip()
                 .onChange(async (value) => {
                     this.plugin.settings.linkTone = value;
                     await this.plugin.saveSettings();
