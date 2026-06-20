@@ -13,6 +13,12 @@ body.obsidian-highlight-style-straight .workspace-leaf-content[data-type="file-e
     border-radius: 0;
 }
 
+body.obsidian-highlight-style-straight .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-folder {
+    background-color: rgba(var(--obsidian-highlight-link-rgb), calc(var(--obsidian-highlight-link-tone) * 0.75));
+    border-left: 3px solid rgba(var(--obsidian-highlight-link-rgb), 0.35);
+    border-radius: 0;
+}
+
 /*
    Style 2: Blob Shape
 */
@@ -30,11 +36,19 @@ body.obsidian-highlight-style-blob .workspace-leaf-content[data-type="file-explo
     margin-bottom: 2px;
 }
 
+body.obsidian-highlight-style-blob .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-folder {
+    background-color: rgba(var(--obsidian-highlight-link-rgb), calc(var(--obsidian-highlight-link-tone) * 0.75));
+    border: 2px dashed rgba(var(--obsidian-highlight-link-rgb), 0.5);
+    border-radius: 40% 50% 30% 60% / 60% 40% 50% 30%;
+    margin-bottom: 2px;
+}
+
 /*
    Style 3: Strikethrough
 */
 body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-active-folder .tree-item-inner,
-body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-file .tree-item-inner {
+body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-file .tree-item-inner,
+body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-folder .tree-item-inner {
     position: relative;
 }
 
@@ -66,8 +80,26 @@ body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="f
     pointer-events: none;
 }
 
+body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-folder .tree-item-inner::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(var(--obsidian-highlight-link-rgb), 0.6) 0,
+        rgba(var(--obsidian-highlight-link-rgb), 0.6) 4px,
+        transparent 4px,
+        transparent 8px
+    );
+    pointer-events: none;
+}
+
 body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-active-folder,
-body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-file {
+body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-file,
+body.obsidian-highlight-style-strikethrough .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .tree-item-self.plugin-linked-folder {
     background-color: transparent;
 }
 
@@ -90,4 +122,13 @@ body.obsidian-highlight-indent-lines .workspace-leaf-content[data-type="file-exp
 body.obsidian-highlight-indent-lines .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .plugin-linked-file-container > .tree-item-children > .nav-indentation-guide {
     border-color: rgba(var(--obsidian-highlight-link-rgb), 0.6);
     background-color: rgba(var(--obsidian-highlight-link-rgb), 0.6);
+}
+
+body.obsidian-highlight-indent-lines .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .plugin-linked-folder-container > .tree-item-children {
+    border-left-color: rgba(var(--obsidian-highlight-link-rgb), 0.45);
+}
+
+body.obsidian-highlight-indent-lines .workspace-leaf-content[data-type="file-explorer"] .nav-files-container .plugin-linked-folder-container > .tree-item-children > .nav-indentation-guide {
+    border-color: rgba(var(--obsidian-highlight-link-rgb), 0.45);
+    background-color: rgba(var(--obsidian-highlight-link-rgb), 0.45);
 }

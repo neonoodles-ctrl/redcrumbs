@@ -1,6 +1,6 @@
 {
   "name": "redcrumbs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Highlights the active file's parent folder and linked files in the File Explorer.",
   "main": "main.js",
   "scripts": {

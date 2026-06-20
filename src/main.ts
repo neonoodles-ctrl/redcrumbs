@@ -1,4 +1,4 @@
-import { Plugin, TFile, PluginSettingTab, App, Setting } from 'obsidian';
+import { Plugin, TFile, TFolder, PluginSettingTab, App, Setting } from 'obsidian';
 
 interface HighlightPluginSettings {
     folderColor: string;
@@ -7,6 +7,8 @@ interface HighlightPluginSettings {
     linkTone: number;
     folderStyle: 'straight' | 'blob' | 'strikethrough';
     colorIndentLines: boolean;
+    traceFolderToRoot: boolean;
+    traceLinkToRoot: boolean;
 }
 
 const DEFAULT_SETTINGS: HighlightPluginSettings = {
@@ -16,6 +18,8 @@ const DEFAULT_SETTINGS: HighlightPluginSettings = {
     linkTone: 0.08,
     folderStyle: 'straight',
     colorIndentLines: true,
+    traceFolderToRoot: false,
+    traceLinkToRoot: false,
 };
 
 function hexToRgb(hex: string): string {
@@ -105,29 +109,76 @@ export default class HighlightPlugin extends Plugin {
         if (!activeFile) return;
 
         const linkedPaths = this.collectLinkedPaths(activeFile);
-        const parentPath = activeFile.parent?.path ?? null;
+        const folderPaths = this.collectFolderHighlightPaths(activeFile);
+        const linkFolderPaths = this.settings.traceLinkToRoot
+            ? this.collectLinkFolderHighlightPaths(linkedPaths)
+            : new Set<string>();
 
         this.forEachFileExplorerItem((path, el) => {
             const containerEl = el.parentElement;
 
-            if (parentPath && path === parentPath && path !== '/') {
+            if (folderPaths.has(path)) {
                 el.classList.add('plugin-active-folder');
                 containerEl?.classList.add('plugin-active-folder-container');
             } else if (linkedPaths.has(path)) {
                 el.classList.add('plugin-linked-file');
                 containerEl?.classList.add('plugin-linked-file-container');
+            } else if (linkFolderPaths.has(path)) {
+                el.classList.add('plugin-linked-folder');
+                containerEl?.classList.add('plugin-linked-folder-container');
             }
         });
     }
 
     clearHighlights() {
         this.forEachFileExplorerItem((_path, el) => {
-            el.classList.remove('plugin-active-folder', 'plugin-linked-file');
+            el.classList.remove('plugin-active-folder', 'plugin-linked-file', 'plugin-linked-folder');
             el.parentElement?.classList.remove(
                 'plugin-active-folder-container',
-                'plugin-linked-file-container'
+                'plugin-linked-file-container',
+                'plugin-linked-folder-container'
             );
         });
+    }
+
+    private collectFolderHighlightPaths(activeFile: TFile): Set<string> {
+        const parent = activeFile.parent;
+        if (!parent || parent.path === '/') {
+            return new Set();
+        }
+
+        if (this.settings.traceFolderToRoot) {
+            return this.collectAncestorFolderPaths(parent);
+        }
+
+        return new Set([parent.path]);
+    }
+
+    private collectLinkFolderHighlightPaths(linkedPaths: Set<string>): Set<string> {
+        const paths = new Set<string>();
+
+        for (const linkPath of linkedPaths) {
+            const file = this.app.vault.getAbstractFileByPath(linkPath);
+            if (file instanceof TFile && file.parent) {
+                for (const folderPath of this.collectAncestorFolderPaths(file.parent)) {
+                    paths.add(folderPath);
+                }
+            }
+        }
+
+        return paths;
+    }
+
+    private collectAncestorFolderPaths(folder: TFolder): Set<string> {
+        const paths = new Set<string>();
+        let current: TFolder | null = folder;
+
+        while (current && current.path !== '/') {
+            paths.add(current.path);
+            current = current.parent;
+        }
+
+        return paths;
     }
 
     private collectLinkedPaths(activeFile: TFile): Set<string> {
@@ -252,6 +303,32 @@ class HighlightSettingTab extends PluginSettingTab {
                     this.plugin.settings.colorIndentLines = value;
                     await this.plugin.saveSettings();
                     this.plugin.updateDOMStyles();
+                }));
+
+        new Setting(containerEl)
+            .setName('Path Tracing')
+            .setHeading();
+
+        new Setting(containerEl)
+            .setName('Trace folder path to root')
+            .setDesc('Highlight every ancestor folder from the active file back to the vault root.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.traceFolderToRoot)
+                .onChange(async (value) => {
+                    this.plugin.settings.traceFolderToRoot = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.updateHighlights(this.plugin.app.workspace.getActiveFile());
+                }));
+
+        new Setting(containerEl)
+            .setName('Trace linked file paths to root')
+            .setDesc('Also highlight ancestor folders for linked files, tracing each link back to the vault root.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.traceLinkToRoot)
+                .onChange(async (value) => {
+                    this.plugin.settings.traceLinkToRoot = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.updateHighlights(this.plugin.app.workspace.getActiveFile());
                 }));
     }
 }

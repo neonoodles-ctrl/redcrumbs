@@ -1,7 +1,7 @@
 {
   "id": "redcrumbs",
   "name": "RedCrumbs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.0.0",
   "description": "Highlights the active file's parent folder and linked files in the File Explorer sidebar.",
   "author": "neonoodles-ctrl",

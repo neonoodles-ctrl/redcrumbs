@@ -12,6 +12,7 @@ RedCrumbs is an Obsidian plugin that highlights the active file's parent folder 
   - **Strikethrough:** A minimalist style that strikes a line through the text of the folder and linked files.
 - **Color & Tone Control:** Fully customize the color and opacity (tone) for both the active folder and linked files via the settings menu.
 - **Indent Line Coloring:** Optionally color the indentation guide lines leading down from the highlighted folder to the file.
+- **Path Tracing:** Optionally highlight every ancestor folder from the active file (or linked files) back to the vault root.
 
 ## Installation
 
@@ -26,7 +27,7 @@ RedCrumbs is an Obsidian plugin that highlights the active file's parent folder 
 
 Once enabled, simply click on any note in your vault. If the note is inside a folder, that folder will highlight. If the note has links to other notes (or is linked by other notes), those notes will also highlight in the File Explorer sidebar.
 
-You can configure all visual settings in **Settings** > **RedCrumbs**.
+You can configure all visual settings in **Settings** > **RedCrumbs**, including **Trace folder path to root** and **Trace linked file paths to root** under **Path Tracing**.
 
 ## Building from Source
 
